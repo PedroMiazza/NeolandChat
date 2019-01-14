@@ -1,0 +1,53 @@
+<div class="container p-3 bg-dark text-white">
+    <nav class="navbar navbar-expand-lg p-3 mb-2 bg-primary text-white">{{title}}</nav>
+    <div class="row p-3 mb-2">
+        <div class="d-block p-2 mr-3 col-md-6 pull-left border border-primary rounded">
+            <ul class="mensajes"></ul>
+        </div>
+        <div class="d-block p-2 col-md-4 ml-auto border border-warning rounded">hh</div>
+    </div>
+    <div class="col-md-12 p- m-1 center-block">
+        <input type="text" class="mensaje col-md-5">
+        <input type="text" class="nick col-md-4">
+        <button class="btnEnviar col-md-2">ENVIAR</button>
+    </div>
+</div>
+<script>
+    let socket = io(); //io es un método
+    $('.btnEnviar').click(() => {
+        //alert('Se ha pulsado el botón')
+        socket.emit('chat:message', {
+            mensaje: $('.mensaje').val(),
+            nick: $('.nick').val()
+        })
+    })
+
+    socket.on('chat:message', (data) => {
+        console.log(data)
+        $('.mensajes').append($('<li>').append(`<strong>${data.nick}</strong>: ${data.mensaje}`))
+        showNotification(data.nick, data.mensaje)
+    })
+
+    socket.on('chat:user', users => {
+        $('.usersConnected').text(`Usuarios conectados: ${users}`)
+    })
+
+    function showNotification(nick, mensaje) {
+        const options = {
+            body: mensaje,
+            dir: 'ltr'
+        }
+        if (Notification.permission === 'granted') {
+            //||
+            //Aceptado
+            let notification = new Notification(`${nick} ha escrito un nuevo mensaje`, options)
+
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission((permission) => {
+                if (permission === 'granted') {
+                    let notification = new Notification(`${nick} ha escrito un nuevo mensaje`, options)
+                }
+            })
+        }
+    }
+</script>
